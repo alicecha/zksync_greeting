@@ -21,7 +21,8 @@
   },
   "scripts": {
     "test": "NODE_ENV=test hardhat test --network zkSyncTestnet",
-    "deploy": "yarn hardhat deploy-zksync --script deploy-greeter.ts",
+    "deploy-greeter": "yarn hardhat deploy-zksync --script deploy-greeter.ts",
+    "deploy-helloworld": "yarn hardhat deploy-zksync --script deploy-helloworld.ts",
     "greet": "yarn hardhat deploy-zksync --script use-greeter.ts"
   }
 }
