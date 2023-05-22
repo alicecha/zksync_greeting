@@ -13,7 +13,7 @@ contract Greeter {
     modifier onlyOwner() {
         require(msg.sender == owner, "Not owner");
         _;
-    } 
+    }
 
     function greet() public view returns (string memory) {
         return greeting;
