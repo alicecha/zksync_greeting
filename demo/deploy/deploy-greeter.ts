@@ -2,10 +2,16 @@ import { Wallet, utils } from "zksync-web3";
 import * as ethers from "ethers";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
+import * as dotenv from "dotenv";
+import * as readline from 'node:readline/promises';
+import { stdin as input, stdout as output } from 'node:process';
 
-// load env file
-import dotenv from "dotenv";
-dotenv.config();
+// set up console user commands
+const rl = readline.createInterface({ input, output });
+
+// load env file - For macOS users
+import path from "path";
+dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
 // load wallet private key from env file
 const PRIVATE_KEY = process.env.WALLET_PRIVATE_KEY || "";
@@ -24,8 +30,10 @@ export default async function (hre: HardhatRuntimeEnvironment) {
   const deployer = new Deployer(hre, wallet);
   const artifact = await deployer.loadArtifact("Greeter");
 
+  //Prompt user to provide constructor greeting
+  const greeting = await rl.question('Greeting: ');
+
   // Estimate contract deployment fee
-  const greeting = "Hi there!";
   const deploymentFee = await deployer.estimateDeployFee(artifact, [greeting]);
 
   // ⚠️ OPTIONAL: You can skip this block if your account already has funds in L2
@@ -43,14 +51,31 @@ export default async function (hre: HardhatRuntimeEnvironment) {
   const parsedFee = ethers.utils.formatEther(deploymentFee.toString());
   console.log(`The deployment is estimated to cost ${parsedFee} ETH`);
 
-  const greeterContract = await deployer.deploy(artifact, [greeting]);
+  // Get confirmation to proceed from user
+  await confirmTx(deployer, artifact, greeting);
 
-  //obtain the Constructor Arguments
-  console.log(
-    "constructor args:" + greeterContract.interface.encodeDeploy([greeting])
-  );
+}
 
-  // Show the contract info.
-  const contractAddress = greeterContract.address;
-  console.log(`${artifact.contractName} was deployed to ${contractAddress}`);
+async function confirmTx(deployer, artifact, greeting) {
+  //User confirmation?
+  const answer = await rl.question("Confirm deployment? [y/n]: ");
+
+  //Yes: proceed with deployment
+  if (answer.toLowerCase() === "y") {
+    const greeterContract = await deployer.deploy(artifact, [greeting]);
+
+    //obtain the Constructor Arguments
+    console.log(
+      "constructor args:" + greeterContract.interface.encodeDeploy([greeting])
+    );
+
+    // Show the contract info.
+    const contractAddress = greeterContract.address;
+    console.log(`${artifact.contractName} was deployed to ${contractAddress}`);
+    return;
+  }
+  
+  //No: revert deployment
+  console.log("Transaction not confirmed. Exiting.");
+  process.exit(1);
 }
