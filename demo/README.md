@@ -18,6 +18,8 @@ This project was scaffolded with [zksync-cli](https://github.com/matter-labs/zks
 
 Both `yarn run deploy` and `yarn run greet` are configured in the `package.json` file and run `yarn hardhat deploy-zksync`.
 
+-`yarn hardhat verify --network [network name] [contract address] [constructor arg]`: verify.
+
 ### Environment variables
 
 In order to prevent users to leak private keys, this project includes the `dotenv` package which is used to load environment variables. It's used to load the wallet private key, required to run the deploy script.
